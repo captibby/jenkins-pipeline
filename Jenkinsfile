@@ -2,30 +2,63 @@ pipeline {
     agent any
 
     stages {
-        stage('Prepare Environment') {
+        stage('Initialize') {
             steps {
-                script {
-                    // Clean workspace
-                    cleanWs()
-                }
+                echo 'Preparing the Environment...'
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                // Uncomment and adjust the following line if you have a repository to checkout:
+                // checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+                // Include your build steps here, if applicable.
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                // Include your test steps here, if applicable.
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                echo 'Archiving artifacts...'
+                // Uncomment and adjust the following line if you have artifacts to archive:
+                // archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
             }
         }
 
         stage('Deploy') {
             steps {
                 script {
-                    // Copy the HTML file to the workspace, where the server will serve it from
-                    sh 'cp index.html .'
-                    // Start the Python HTTP server in the background
-                    sh 'python3 server.py &'
+                    echo 'Deploying...'
+                    // Start the Python HTTP server
+                    // This will block further progress until manually stopped
+                    sh(script: 'python -m SimpleHTTPServer 8000', wait: true)
                 }
+            }
+        }
+
+        stage('Notification') {
+            steps {
+                echo 'Sending notification...'
+                // Include your notification steps here, if applicable.
             }
         }
     }
 
     post {
         always {
-            // Optionally, add steps to clean up after the pipeline runs
             echo 'Pipeline completed.'
         }
     }
