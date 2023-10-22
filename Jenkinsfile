@@ -42,9 +42,17 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying...'
-                    // Start the Python HTTP server
-                    // This will block further progress until manually stopped
-                    sh(script: 'python -m SimpleHTTPServer 8000', wait: true)
+                    sh '''
+                        # Create a Dockerfile to build an image for your web page
+                        echo 'FROM nginx:alpine' > Dockerfile
+                        echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
+
+                        # Build the Docker image
+                        docker build -t my-web-page .
+
+                        # Run a container from the Docker image
+                        docker run -d -p 8000:80 my-web-page
+                    '''
                 }
             }
         }
