@@ -11,20 +11,13 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                script {
-                    // Nothing to build for a static HTML page
-                    echo 'Build stage completed.'
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 script {
-                    // Start a simple Python HTTP server to serve the static HTML page
-                    sh 'python3 -m http.server 8000 &'
+                    // Copy the HTML file to the workspace, where the server will serve it from
+                    sh 'cp index.html .'
+                    // Start the Python HTTP server in the background
+                    sh 'python3 server.py &'
                 }
             }
         }
