@@ -45,19 +45,17 @@ pipeline {
                     sh '''
                     # Define the app name and port
                     APP_NAME="my-web-page"
-                    PORT="8002"
+                    PORT="8000"
 
                     # Identify the container ID for an existing container with the specific image and port
-                    CONTAINER_ID=$(docker ps -q --filter "ancestor=${APP_NAME}" --filter "status=running" | xargs -r docker inspect --format '{{range .NetworkSettings.Ports}}{{println .HostPort}}{{end}}' | grep ${PORT})
+                    CONTAINER_ID=$(docker ps -q --filter "ancestor=${APP_NAME}" --filter "status=running" | xargs docker inspect --format '{{range $p, $conf := .NetworkSettings.Ports}}{{$p}} {{range $conf}}{{.HostPort}}{{end}} {{end}}' | grep "80/tcp" | grep "${PORT}" | awk '{print $1}')
 
-                    # If a container is found, stop and remove it
                     if [ ! -z "$CONTAINER_ID" ]; then
                       echo "Stopping and removing the container running on port ${PORT}..."
                       docker stop $CONTAINER_ID
                       docker rm $CONTAINER_ID
                     fi
 
-                    # Proceed to create/update, build, and run the Docker container
                     echo 'FROM nginx:alpine' > Dockerfile
                     echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
 
