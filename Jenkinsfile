@@ -52,7 +52,7 @@ pipeline {
                     fi
 
                     # Identify and stop any containers using port 8001
-                    PORT_CONTAINER_ID=$(docker ps -q --filter "expose=8001")
+                    PORT_CONTAINER_ID=$(docker ps --filter "status=running" | grep "0.0.0.0:8001->80/tcp" | awk '{print $1}')
                     if [ ! -z "$PORT_CONTAINER_ID" ]; then
                       echo "Stopping and removing any container using port 8001..."
                       docker stop $PORT_CONTAINER_ID
