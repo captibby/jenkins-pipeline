@@ -43,19 +43,22 @@ pipeline {
                 script {
                     echo 'Deploying...'
                     sh '''
-                        # Ensure no containers are using the target port
-                        docker ps -q --filter "publish=8000" | xargs -r docker stop
-                        docker ps -a -q --filter "publish=8000" | xargs -r docker rm
-                        
-                        # Create a Dockerfile to build an image for your web page
-                        echo 'FROM nginx:alpine' > Dockerfile
-                        echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
+                    # Check if any containers are using the target port and stop/remove them
+                    CONTAINER_ID=$(docker ps -q --filter "ancestor=my-web-page")
+                    if [ ! -z "$CONTAINER_ID" ]; then
+                      docker stop $CONTAINER_ID
+                      docker rm $CONTAINER_ID
+                    fi
 
-                        # Build the Docker image
-                        docker build -t my-web-page .
+                    # Create/Update the Dockerfile
+                    echo 'FROM nginx:alpine' > Dockerfile
+                    echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
 
-                        # Run a container from the Docker image
-                        docker run -d -p 8000:80 my-web-page
+                    # Build the Docker image
+                    docker build -t my-web-page .
+
+                    # Run a new container from the Docker image
+                    docker run -d -p 8000:80 my-web-page
                     '''
                 }
             }
