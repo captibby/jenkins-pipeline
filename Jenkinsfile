@@ -51,10 +51,10 @@ pipeline {
                       docker rm $CONTAINER_ID
                     fi
 
-                    # Identify and stop any containers using port 8000
-                    PORT_CONTAINER_ID=$(docker ps --filter "status=running" | grep "0.0.0.0:8000->80/tcp" | awk '{print $1}')
+                    # Identify and stop any containers using port 8002
+                    PORT_CONTAINER_ID=$(docker ps --filter "status=running" | grep "0.0.0.0:8002->80/tcp" | awk '{print $1}')
                     if [ ! -z "$PORT_CONTAINER_ID" ]; then
-                      echo "Stopping and removing any container using port 8000..."
+                      echo "Stopping and removing any container using port 8002..."
                       docker stop $PORT_CONTAINER_ID
                       docker rm $PORT_CONTAINER_ID
                     fi
@@ -67,7 +67,7 @@ pipeline {
                     docker build -t my-web-page .
 
                     # Attempt to run a new container from the Docker image
-                    docker run -d -p 8000:80 my-web-page
+                    docker run -d -p 8002:80 my-web-page
                     '''
                 }
             }
