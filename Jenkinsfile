@@ -43,6 +43,10 @@ pipeline {
                 script {
                     echo 'Deploying...'
                     sh '''
+                        # Ensure no containers are using the target port
+                        docker ps -q --filter "publish=8000" | xargs -r docker stop
+                        docker ps -a -q --filter "publish=8000" | xargs -r docker rm
+                        
                         # Create a Dockerfile to build an image for your web page
                         echo 'FROM nginx:alpine' > Dockerfile
                         echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
