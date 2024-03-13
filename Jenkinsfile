@@ -51,7 +51,7 @@ pipeline {
                         docker build -t my-web-page .
 
                         # Run a container from the Docker image
-                        docker run -d -p 8000:80 my-web-page
+                        docker run -d -p 8002:80 my-web-page
                     '''
                 }
             }
