@@ -43,31 +43,26 @@ pipeline {
                 script {
                     echo 'Deploying...'
                     sh '''
-                    # Identify and stop any containers using the image my-web-page
-                    CONTAINER_ID=$(docker ps -q --filter "ancestor=my-web-page")
+                    # Define the app name and port
+                    APP_NAME="my-web-page"
+                    PORT="8002"
+
+                    # Identify the container ID for an existing container with the specific image and port
+                    CONTAINER_ID=$(docker ps -q --filter "ancestor=${APP_NAME}" --filter "status=running" | xargs -r docker inspect --format '{{range .NetworkSettings.Ports}}{{println .HostPort}}{{end}}' | grep ${PORT})
+
+                    # If a container is found, stop and remove it
                     if [ ! -z "$CONTAINER_ID" ]; then
-                      echo "Stopping and removing existing my-web-page containers..."
+                      echo "Stopping and removing the container running on port ${PORT}..."
                       docker stop $CONTAINER_ID
                       docker rm $CONTAINER_ID
                     fi
 
-                    # Identify and stop any containers using port 8001
-                    PORT_CONTAINER_ID=$(docker ps --filter "status=running" | grep "0.0.0.0:8001->80/tcp" | awk '{print $1}')
-                    if [ ! -z "$PORT_CONTAINER_ID" ]; then
-                      echo "Stopping and removing any container using port 8001..."
-                      docker stop $PORT_CONTAINER_ID
-                      docker rm $PORT_CONTAINER_ID
-                    fi
-
-                    # Create/Update the Dockerfile
+                    # Proceed to create/update, build, and run the Docker container
                     echo 'FROM nginx:alpine' > Dockerfile
                     echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
 
-                    # Build the Docker image
-                    docker build -t my-web-page .
-
-                    # Attempt to run a new container from the Docker image
-                    docker run -d -p 8001:80 my-web-page
+                    docker build -t ${APP_NAME} .
+                    docker run -d -p ${PORT}:80 ${APP_NAME}
                     '''
                 }
             }
