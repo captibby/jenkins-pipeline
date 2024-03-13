@@ -43,15 +43,31 @@ pipeline {
                 script {
                     echo 'Deploying...'
                     sh '''
-                        # Create a Dockerfile to build an image for your web page
-                        echo 'FROM nginx:alpine' > Dockerfile
-                        echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
+                    # Identify and stop any containers using the image my-web-page
+                    CONTAINER_ID=$(docker ps -q --filter "ancestor=my-web-page")
+                    if [ ! -z "$CONTAINER_ID" ]; then
+                      echo "Stopping and removing existing my-web-page containers..."
+                      docker stop $CONTAINER_ID
+                      docker rm $CONTAINER_ID
+                    fi
 
-                        # Build the Docker image
-                        docker build -t my-web-page .
+                    # Identify and stop any containers using port 8001
+                    PORT_CONTAINER_ID=$(docker ps -q --filter "expose=8001")
+                    if [ ! -z "$PORT_CONTAINER_ID" ]; then
+                      echo "Stopping and removing any container using port 8001..."
+                      docker stop $PORT_CONTAINER_ID
+                      docker rm $PORT_CONTAINER_ID
+                    fi
 
-                        # Run a container from the Docker image
-                        docker run -d -p 8001:80 my-web-page
+                    # Create/Update the Dockerfile
+                    echo 'FROM nginx:alpine' > Dockerfile
+                    echo 'COPY index.html /usr/share/nginx/html/index.html' >> Dockerfile
+
+                    # Build the Docker image
+                    docker build -t my-web-page .
+
+                    # Attempt to run a new container from the Docker image
+                    docker run -d -p 8001:80 my-web-page
                     '''
                 }
             }
