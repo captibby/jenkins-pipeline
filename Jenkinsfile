@@ -43,11 +43,20 @@ pipeline {
                 script {
                     echo 'Deploying...'
                     sh '''
-                    # Check if any containers are using the target port and stop/remove them
+                    # Identify and stop any containers using the image my-web-page
                     CONTAINER_ID=$(docker ps -q --filter "ancestor=my-web-page")
                     if [ ! -z "$CONTAINER_ID" ]; then
+                      echo "Stopping and removing existing my-web-page containers..."
                       docker stop $CONTAINER_ID
                       docker rm $CONTAINER_ID
+                    fi
+
+                    # Identify and stop any containers using port 8000
+                    PORT_CONTAINER_ID=$(docker ps --filter "status=running" | grep "0.0.0.0:8000->80/tcp" | awk '{print $1}')
+                    if [ ! -z "$PORT_CONTAINER_ID" ]; then
+                      echo "Stopping and removing any container using port 8000..."
+                      docker stop $PORT_CONTAINER_ID
+                      docker rm $PORT_CONTAINER_ID
                     fi
 
                     # Create/Update the Dockerfile
@@ -57,8 +66,8 @@ pipeline {
                     # Build the Docker image
                     docker build -t my-web-page .
 
-                    # Run a new container from the Docker image
-                    docker run -d -p 8002:80 my-web-page
+                    # Attempt to run a new container from the Docker image
+                    docker run -d -p 8000:80 my-web-page
                     '''
                 }
             }
