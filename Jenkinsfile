@@ -44,7 +44,7 @@ pipeline {
                     echo 'Deploying...'
                     sh '''
                     APP_NAME="my-web-page"
-                    PORT="8003"
+                    PORT="8000"
 
                     # Find the container ID running on the specified port and stop/remove it
                     CONTAINER_ID=$(docker ps --filter "status=running" -a | grep ":${PORT}->" | awk '{print $1}')
